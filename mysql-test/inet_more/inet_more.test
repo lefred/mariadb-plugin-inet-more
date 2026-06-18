@@ -1,0 +1,46 @@
+--echo #
+--echo # INET metadata and CIDR functions
+--echo #
+
+INSTALL SONAME 'inet_more';
+
+SELECT ip_class('10.1.2.3') AS ipv4_private,
+       ip_class('8.8.8.8') AS ipv4_global,
+       ip_class('127.0.0.1') AS ipv4_loopback,
+       ip_class('169.254.1.1') AS ipv4_link_local,
+       ip_class('224.0.0.1') AS ipv4_multicast;
+
+SELECT ip_class('::1') AS ipv6_loopback,
+       ip_class('fe80::1') AS ipv6_link_local,
+       ip_class('fc00::1') AS ipv6_unique_local,
+       ip_class('2001:db8::1') AS ipv6_documentation,
+       ip_class('2001:4860:4860::8888') AS ipv6_global;
+
+SELECT cidr_contains('192.168.0.0/16', '192.168.10.20') AS v4_inside,
+       cidr_contains('192.168.0.0/16', '192.169.10.20') AS v4_outside,
+       cidr_contains('2001:db8::/32', '2001:db8::abcd') AS v6_inside,
+       cidr_contains('2001:db8::/32', '2001:db9::abcd') AS v6_outside;
+
+CREATE TABLE t1 (a INET4, b INET6);
+INSERT INTO t1 VALUES ('192.168.10.20', '2001:db8::abcd');
+
+SELECT ip_class(a) AS inet4_class,
+       ip_class(b) AS inet6_class,
+       cidr_contains('192.168.0.0/16', a) AS inet4_inside,
+       cidr_contains('2001:db8::/32', b) AS inet6_inside
+FROM t1;
+
+DROP TABLE t1;
+
+SELECT ip_class(NULL) AS null_class,
+       cidr_contains(NULL, '192.168.1.1') AS null_cidr,
+       cidr_contains('192.168.0.0/16', NULL) AS null_addr;
+
+--error ER_UNKNOWN_ERROR
+SELECT ip_class('not-an-ip');
+--error ER_UNKNOWN_ERROR
+SELECT cidr_contains('192.168.0.0/33', '192.168.1.1');
+--error ER_UNKNOWN_ERROR
+SELECT cidr_contains('not-a-cidr', '192.168.1.1');
+
+UNINSTALL SONAME 'inet_more';
