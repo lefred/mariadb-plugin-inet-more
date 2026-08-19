@@ -85,5 +85,5 @@ maria_declare_plugin(inet_more){MariaDB_FUNCTION_PLUGIN,
      0x0100,
      NULL,
      NULL,
-     "1.0",
+     "0.2.0",
      MariaDB_PLUGIN_MATURITY_BETA} maria_declare_plugin_end;
